@@ -3,12 +3,45 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, f1_score
 import numpy as np
 import pandas as pd
+import argparse
 import time
 
-print('Loading full_data.csv ...')
-df = pd.read_csv('full_data.csv')
+parser = argparse.ArgumentParser()
+parser.add_argument('--no-temp', action='store_true', help='Exclude temperature features from training and testing')
+parser.add_argument('csv', help='Path to input CSV file')
+args = parser.parse_args()
+
+# ── load & normalise format ─────────────────────────────────────────────────
+
+def _load_csv(path):
+    df = pd.read_csv(path)
+    # New format uses underscores; rename to the canonical space-separated names
+    if 'Participant_ID' in df.columns:
+        df = df.rename(columns={'Participant_ID': 'Participant ID', 'Window_ID': 'Window ID'})
+        print(f'  Detected new format (stress_features_all)')
+    else:
+        print(f'  Detected old format (full_data)')
+    if 'Visit_Type' in df.columns:
+        df = df.drop(columns=['Visit_Type'])
+    feature_cols = [c for c in df.columns if c not in ['Participant ID', 'Window ID', 'Label']]
+    nan_count = df[feature_cols].isna().sum().sum()
+    if nan_count:
+        df[feature_cols] = df[feature_cols].fillna(0)
+        print(f'  Imputed {nan_count:,} NaN feature values with 0')
+    return df
+
+csv_path = args.csv
+print(f'Loading {csv_path} ...')
+df = _load_csv(csv_path)
 print(f'Loaded {len(df):,} windows across {df["Participant ID"].nunique()} subjects.')
 print(f'Label distribution: {dict(df["Label"].value_counts().rename({0: "non-stress", 1: "stress"}))}')
+
+if args.no_temp:
+    temp_cols = [c for c in df.columns if c.startswith('TEMP_')]
+    if temp_cols:
+        df = df.drop(columns=temp_cols)
+        print(f'Temperature features disabled: dropped {temp_cols}')
+
 print()
 
 # Per-subject z-score normalisation — removes inter-subject physiological
