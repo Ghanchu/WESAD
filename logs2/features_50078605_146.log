@@ -1,0 +1,7 @@
+[INFO] Features task 146 | pid=126641 modality=ecg
+/home/aparvaz/moxie-pipeline/src/features/features_acq_ecg.py:126: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  df["Event_Label"] = pd.read_csv(
+[INFO] Loaded 11,539,956 samples from /nfs/turbo/lsa-annelism1/Prod_Processed_Data/126641/TSST Visit/processing/processed_acq_ecg_126641_TSST Visit.csv
+[INFO] Extracting ECG features for pid=126641 visit=TSST Visit
+[INFO] Window=60.0s  Step=0.25s  SR=2000Hz
+[INFO] Saved 22840 window row(s) to /nfs/turbo/lsa-annelism1/Prod_Processed_Data/126641/TSST Visit/features/features_acq_ecg_126641_TSST Visit.csv

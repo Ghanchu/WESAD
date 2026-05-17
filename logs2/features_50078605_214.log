@@ -1,0 +1,8 @@
+[INFO] Features task 214 | pid=146225 modality=bp
+/home/aparvaz/moxie-pipeline/src/features/features_acq_bp.py:139: DtypeWarning: Columns (8) have mixed types. Specify dtype option on import or set low_memory=False.
+  label_series = pd.read_csv(input_file, usecols=["Event_Label"])["Event_Label"]
+[INFO] Loaded 13,411,101 samples from /nfs/turbo/lsa-annelism1/Prod_Processed_Data/146225/PDST Visit/processing/processed_acq_bp_146225_PDST Visit.csv
+[INFO] Extracting BP features for pid=146225 visit=PDST Visit
+[INFO] Sampling rate: 2000.0 Hz
+[INFO] No events file — using fallback segmentation
+[INFO] Saved 4 phase row(s) to /nfs/turbo/lsa-annelism1/Prod_Processed_Data/146225/PDST Visit/features/features_acq_bp_146225_PDST Visit.csv

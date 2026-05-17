@@ -1,0 +1,5 @@
+[INFO] Features task 16 | pid=124940 modality=ecg
+/home/aparvaz/moxie-pipeline/src/features/features_acq_ecg.py:126: DtypeWarning: Columns (19) have mixed types. Specify dtype option on import or set low_memory=False.
+  df["Event_Label"] = pd.read_csv(
+[INFO] Loaded 13,494,423 samples from /nfs/turbo/lsa-annelism1/Prod_Processed_Data/124940/PDST Visit/processing/processed_acq_ecg_124940_PDST Visit.csv
+[WARN] No stress-phase labels found for 124940 PDST Visit (expected: ['Speech Period']) — writing empty output.

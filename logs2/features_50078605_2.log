@@ -1,0 +1,7 @@
+[INFO] Features task 2 | pid=124874 modality=eda
+/home/aparvaz/moxie-pipeline/src/features/features_acq_eda.py:92: DtypeWarning: Columns (11) have mixed types. Specify dtype option on import or set low_memory=False.
+  df["Event_Label"] = pd.read_csv(
+[INFO] Loaded 13,748,737 samples from /nfs/turbo/lsa-annelism1/Prod_Processed_Data/124874/PDST Visit/processing/processed_acq_eda_124874_PDST Visit.csv
+[INFO] Extracting EDA features for pid=124874 visit=PDST Visit
+[INFO] Window=60.0s  Step=0.25s  SR=2000Hz
+[INFO] Saved 27258 window row(s) to /nfs/turbo/lsa-annelism1/Prod_Processed_Data/124874/PDST Visit/features/features_acq_eda_124874_PDST Visit.csv

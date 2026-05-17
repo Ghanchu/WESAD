@@ -8,6 +8,10 @@ import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-temp', action='store_true', help='Exclude temperature features from training and testing')
+parser.add_argument('--no-resp', action='store_true', help='Exclude respiration features from training and testing')
+parser.add_argument('--balanced', action='store_true', help='Weight classes inversely to their frequency to handle imbalance')
+parser.add_argument('--min-resp-coverage', type=float, default=0.0,
+                    help='Drop participants whose RESP coverage falls below this fraction (e.g. 0.5 keeps only those with >=50%% non-NaN RESP)')
 parser.add_argument('csv', help='Path to input CSV file')
 args = parser.parse_args()
 
@@ -23,6 +27,19 @@ def _load_csv(path):
         print(f'  Detected old format (full_data)')
     if 'Visit_Type' in df.columns:
         df = df.drop(columns=['Visit_Type'])
+
+    if args.min_resp_coverage > 0 and 'RESP_inhal_mean' in df.columns:
+        coverage = df.groupby('Participant ID')['RESP_inhal_mean'].apply(
+            lambda s: s.notna().mean()
+        )
+        keep = coverage[coverage >= args.min_resp_coverage].index
+        dropped = sorted(set(coverage.index) - set(keep))
+        before = len(df)
+        df = df[df['Participant ID'].isin(keep)]
+        print(f'  RESP coverage filter (>= {args.min_resp_coverage:.0%}): '
+              f'kept {len(keep)} subjects, dropped {len(dropped)} ({dropped})')
+        print(f'  Rows: {before:,} -> {len(df):,}')
+
     feature_cols = [c for c in df.columns if c not in ['Participant ID', 'Window ID', 'Label']]
     nan_count = df[feature_cols].isna().sum().sum()
     if nan_count:
@@ -41,6 +58,12 @@ if args.no_temp:
     if temp_cols:
         df = df.drop(columns=temp_cols)
         print(f'Temperature features disabled: dropped {temp_cols}')
+
+if args.no_resp:
+    resp_cols = [c for c in df.columns if c.startswith('RESP_') or c.startswith('RSP_')]
+    if resp_cols:
+        df = df.drop(columns=resp_cols)
+        print(f'Respiration features disabled: dropped {resp_cols}')
 
 print()
 
@@ -78,7 +101,8 @@ for idx, test_participant in enumerate(participants, 1):
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled  = scaler.transform(X_test)
 
-    model = LinearDiscriminantAnalysis()
+    priors = [0.5, 0.5] if args.balanced else None
+    model = LinearDiscriminantAnalysis(priors=priors)
     model.fit(X_train_scaled, y_train)
     preds = model.predict(X_test_scaled)
 

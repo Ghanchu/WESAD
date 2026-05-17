@@ -10,6 +10,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('train_csv', help='CSV to train on (e.g. full_data.csv)')
 parser.add_argument('test_csv',  help='CSV to test on (e.g. stress_features_all.csv)')
 parser.add_argument('--no-pdst', action='store_true', help='Exclude PDST windows from MOXIE data')
+parser.add_argument('--no-resp', action='store_true', help='Exclude respiration features from training and testing')
+parser.add_argument('--balanced', action='store_true', help='Weight classes inversely to their frequency to handle imbalance')
+parser.add_argument('--min-resp-coverage', type=float, default=0.0,
+                    help='Drop participants whose RESP coverage falls below this fraction (e.g. 0.5 keeps only those with >=50%% non-NaN RESP)')
 args = parser.parse_args()
 
 META = {'Participant ID', 'Window ID', 'Label', 'Visit_Type'}
@@ -27,6 +31,24 @@ def load(path):
         print(f'  Detected old format')
     if 'Visit_Type' in df.columns:
         df = df.drop(columns=['Visit_Type'])
+
+    if args.min_resp_coverage > 0 and 'RESP_inhal_mean' in df.columns:
+        coverage = df.groupby('Participant ID')['RESP_inhal_mean'].apply(
+            lambda s: s.notna().mean()
+        )
+        keep = coverage[coverage >= args.min_resp_coverage].index
+        dropped = sorted(set(coverage.index) - set(keep))
+        before = len(df)
+        df = df[df['Participant ID'].isin(keep)]
+        print(f'  RESP coverage filter (>= {args.min_resp_coverage:.0%}): '
+              f'kept {len(keep)} subjects, dropped {len(dropped)} ({dropped})')
+        print(f'  Rows: {before:,} -> {len(df):,}')
+
+    if args.no_resp:
+        resp_cols = [c for c in df.columns if c.startswith('RESP_') or c.startswith('RSP_')]
+        if resp_cols:
+            df = df.drop(columns=resp_cols)
+            print(f'  Dropped respiration: {resp_cols}')
     feature_cols = [c for c in df.columns if c not in META]
     nan_count = df[feature_cols].isna().sum().sum()
     if nan_count:
@@ -72,7 +94,8 @@ X_test  = scaler.transform(X_test)
 
 print(f'\nTraining LDA on {len(X_train):,} windows ...')
 t0 = time.time()
-model = LinearDiscriminantAnalysis()
+priors = [0.5, 0.5] if args.balanced else None
+model = LinearDiscriminantAnalysis(priors=priors)
 model.fit(X_train, y_train)
 print(f'  Done in {time.time()-t0:.1f}s')
 

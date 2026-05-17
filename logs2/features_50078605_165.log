@@ -1,0 +1,7 @@
+[INFO] Features task 165 | pid=127729 modality=emg
+/home/aparvaz/moxie-pipeline/src/features/features_acq_emg.py:136: DtypeWarning: Columns (12) have mixed types. Specify dtype option on import or set low_memory=False.
+  df["Event_Label"] = pd.read_csv(
+[INFO] Loaded 18,479,082 samples from /nfs/turbo/lsa-annelism1/Prod_Processed_Data/127729/PDST Visit/processing/processed_acq_emg_127729_PDST Visit.csv
+[INFO] Extracting EMG features for pid=127729 visit=PDST Visit
+[INFO] Window=60.0s  Step=0.25s  SR=2000Hz
+[INFO] Saved 36719 window row(s) to /nfs/turbo/lsa-annelism1/Prod_Processed_Data/127729/PDST Visit/features/features_acq_emg_127729_PDST Visit.csv
